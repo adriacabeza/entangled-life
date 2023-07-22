@@ -27,7 +27,7 @@ def discover_player_classes():
 def run():
     # Discover and register all player subclasses
     # Get the list of registered player names from the Registry
-    # Automatically discover and register all player classes in player.py
+    # Automatically discover and register all player classes
     discover_player_classes()
     registered_players = list(Registry.registered_players.keys())
     # Create players using the registered names
