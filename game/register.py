@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from typing import Callable, Union
 
+from game.player.player import Player
+
 
 class Registry:
     # A dictionary to store the registered players and their factory functions
-    registered_players: dict[str, Callable[[], "Player"]] = {}
+    registered_players: dict[str, Callable[[], Player]] = {}
 
     @classmethod
-    def register(cls, name: str, factory: Callable[[], "Player"]) -> None:
+    def register(cls, name: str, factory: Callable[[], Player]) -> None:
         """
         Register a player class with its name and factory function.
 
@@ -19,7 +21,7 @@ class Registry:
         cls.registered_players[name] = factory
 
     @classmethod
-    def new_player(cls, name: str) -> Union["Player", RuntimeError]:
+    def new_player(cls, name: str) -> Union[Player, RuntimeError]:
         """
         Create a new instance of a player class by name.
 

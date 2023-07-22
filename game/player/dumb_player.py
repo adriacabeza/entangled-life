@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import random
 from typing import Optional
-from uuid import UUID
 
-from game.action import Command
 from game.player.player import Player
-from game.utils import Dir, MushroomUnit
+from game.utils import Dir, MushroomUnit, Command
 
 
 class DumbPlayer(Player):
@@ -35,7 +33,7 @@ class DumbPlayer(Player):
         Move a mushroom with the given identifier id.
 
         Args:
-            mushroom_id (UUID): The unique identifier of the mushroom to move.
+            mushroom (MushroomUnit): Mushroom to move.
 
         Moves the mushroom in a random direction, if the new position is valid.
         """

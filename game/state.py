@@ -52,9 +52,14 @@ class State:
         """
         Generate mushroom units for each player.
         """
-        for player_name, player in self.players.items():  # Iterate over players
+        for (
+            player_name,
+            player,
+        ) in self.players.items():  # Iterate over players
             # Spawn a new mushroom unit with a random ID and position (Pos())
-            self.spawn(MushroomUnit(id=uuid.uuid4(), player=player_name, pos=Pos()))
+            self.spawn(
+                MushroomUnit(id=uuid.uuid4(), player=player_name, pos=Pos())
+            )
 
     def place_food(self):
         """
@@ -72,7 +77,9 @@ class State:
             if is_valid:
                 f = Food(
                     id=uuid.uuid4(),
-                    quantity=random.randint(MIN_QUANTITY_OF_FOOD, MAX_QUANTITY_OF_FOOD),
+                    quantity=random.randint(
+                        MIN_QUANTITY_OF_FOOD, MAX_QUANTITY_OF_FOOD
+                    ),
                     pos=Pos(i, j),
                 )
                 self.food[f.id] = f
@@ -90,7 +97,8 @@ class State:
             bool: True if the position is valid, False otherwise.
         """
         for ii in range(
-            max(0, i - MIN_DISTANCE_FOOD), min(MAP_SIZE, i + MIN_DISTANCE_FOOD - 1)
+            max(0, i - MIN_DISTANCE_FOOD),
+            min(MAP_SIZE, i + MIN_DISTANCE_FOOD - 1),
         ):
             for jj in range(
                 max(0, j - MIN_DISTANCE_FOOD),
@@ -176,9 +184,9 @@ class State:
                     self.food[cell.food_id].quantity -= 1
                     if self.food[cell.food_id].quantity == 0:
                         # Remove the food cell from the grid
-                        self.grid[mushroom_unit.pos.i][mushroom_unit.pos.j] = Cell(
-                            type=CellType.NORMAL
-                        )
+                        self.grid[mushroom_unit.pos.i][
+                            mushroom_unit.pos.j
+                        ] = Cell(type=CellType.NORMAL)
                         del self.food[cell.food_id]
 
     def spawn(self, mushroom_unit: MushroomUnit):
@@ -232,7 +240,9 @@ class State:
         Returns:
             Tuple[int, int]: A tuple representing the row and column indices for the spawn position.
         """
-        return random.randrange(0, MAP_SIZE - 1), random.randrange(0, MAP_SIZE - 1)
+        return random.randrange(0, MAP_SIZE - 1), random.randrange(
+            0, MAP_SIZE - 1
+        )
 
     @staticmethod
     def is_valid_position(pos: Pos) -> bool:
