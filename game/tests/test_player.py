@@ -47,7 +47,6 @@ def test_reset(player):
     assert player.commands_tried == 0
 
 
-
 def test_winning(player):
     state = State()
     player.set_state(state)
@@ -75,6 +74,6 @@ def test_split(player):
     state.grid[2][2].mushroom_id = mushroom_unit.id
     state.mushrooms[mushroom_unit.id] = mushroom_unit
 
-    assert  len(player.mushrooms) == 1
+    assert len(player.mushrooms) == 1
     player.split(mushroom_unit)
-    assert len(player.mushrooms)  == 2
+    assert len(player.mushrooms) == 2

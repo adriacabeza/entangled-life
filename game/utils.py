@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from enum import Enum, auto
-from typing import Union
-
 from dataclasses import dataclass
-from typing import List, Set
+from enum import Enum, auto
+from typing import List, Set, Union
 from uuid import UUID
 
 

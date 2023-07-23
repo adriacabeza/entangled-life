@@ -4,7 +4,7 @@ import random
 from typing import Optional
 
 from game.player.player import Player
-from game.utils import Dir, MushroomUnit, Command
+from game.utils import Command, Dir, MushroomUnit
 
 
 class DumbPlayer2(Player):

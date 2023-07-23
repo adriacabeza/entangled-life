@@ -31,9 +31,10 @@ def test_pos_equality():
     assert pos1 == pos2
     assert pos1 != pos3
 
+
 def test_action_execute():
     action = Action()
-    mushroom_id = uuid.uuid4() 
+    mushroom_id = uuid.uuid4()
     direction = Dir.SOUTH
     command = Command(id=mushroom_id, dir=direction)
 
@@ -46,7 +47,7 @@ def test_action_execute():
 
 def test_action_execute_maximum_commands():
     action = Action()
-    mushroom_id = uuid.uuid4() 
+    mushroom_id = uuid.uuid4()
     direction = Dir.SOUTH
     command = Command(id=mushroom_id, dir=direction)
 
