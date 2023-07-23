@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import time
 from pprint import pprint
 
 import game.player as player
@@ -36,14 +37,15 @@ def run():
     # Create the game state
     game_state = State()
     game_state.players = {player.name: player for player in players}
+    for player in players:
+        player.set_state(game_state)
 
     # Generate initial mushroom units for the players
     game_state.generate_mushroom_units()
-    pprint(game_state.mushrooms)
     game_state.place_food()
-    pprint(game_state.food)
 
     # Run the fight for a fixed number of rounds
+    start = time.time()
     for round_number in range(NUMBER_OF_ROUNDS):
         for player in players:
             player.reset()
@@ -53,6 +55,8 @@ def run():
 
         # Print the current state after each round
     game_state.print_results()
+    print(f"time elapsed {time.time()-start}")
+    game_state.save_game()
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import csv
 
 import random
 import uuid
@@ -18,7 +19,7 @@ from game.utils import Cell, CellType, Food, MushroomUnit, Pos, Command
 
 
 class State:
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, output_file: str = "output.csv", seed: Optional[int] = None):
         self.round: int = 0
         self.players = dict()
         self.grid: list[list[Cell]] = [
@@ -28,6 +29,8 @@ class State:
         self.total_score: dict[str, int] = dict()
         self.food: dict[uuid.UUID, Food] = dict()
         self.mushrooms: dict[uuid.UUID, MushroomUnit] = dict()
+        self.output_file: str = output_file
+        self.output_buffer: list[str] = list()
         if seed:
             random.seed(seed)
         else:
@@ -56,10 +59,9 @@ class State:
             player_name,
             player,
         ) in self.players.items():  # Iterate over players
+            self.output_buffer.append(f"Player {player_name} spawn units")
             # Spawn a new mushroom unit with a random ID and position (Pos())
-            self.spawn(
-                MushroomUnit(id=uuid.uuid4(), player=player_name, pos=Pos())
-            )
+            self.spawn(MushroomUnit(id=uuid.uuid4(), player=player_name, pos=Pos()))
 
     def place_food(self):
         """
@@ -77,13 +79,12 @@ class State:
             if is_valid:
                 f = Food(
                     id=uuid.uuid4(),
-                    quantity=random.randint(
-                        MIN_QUANTITY_OF_FOOD, MAX_QUANTITY_OF_FOOD
-                    ),
+                    quantity=random.randint(MIN_QUANTITY_OF_FOOD, MAX_QUANTITY_OF_FOOD),
                     pos=Pos(i, j),
                 )
                 self.food[f.id] = f
                 self.grid[i][j] = Cell(type=CellType.FOOD, food_id=f.id)
+                self.output_buffer.append(f"Food {f.id} placed in {f.pos}")
 
     def food_valid(self, i: int, j: int) -> bool:
         """
@@ -121,6 +122,7 @@ class State:
         winners: list[str] = list()
         for player_name, player in self.players.items():
             print(f"Player {player_name} got score {player.score}")
+            self.output_buffer.append(f"Player {player_name} got score {player.score}")
             if player.score > max_score:
                 max_score = player.score
                 winners.append(player_name)
@@ -133,6 +135,7 @@ class State:
         """
         Perform the actions to compute the next state for the next round.
         """
+        self.output_buffer.append(f"{self.round}")
         commands = list()
         for _, player in self.players.items():
             for c in player.commands_to_perform:
@@ -165,7 +168,17 @@ class State:
         if mushroom_unit is not None:
             next_pos = mushroom_unit.pos + command.dir
             if self.is_valid_position(next_pos):
+                self.output_buffer.append(
+                    f"{mushroom_unit.player},{mushroom_unit.id} from"
+                    f" {mushroom_unit.pos} to "
+                    f"{next_pos}"
+                )
                 mushroom_unit.pos = next_pos
+
+    def save_game(self) -> None:
+        with open(self.output_file, "w", newline="") as file:
+            for row in self.output_buffer:
+                file.write(f"{row}\n")
 
     def update_food(self) -> None:
         """
@@ -184,10 +197,11 @@ class State:
                     self.food[cell.food_id].quantity -= 1
                     if self.food[cell.food_id].quantity == 0:
                         # Remove the food cell from the grid
-                        self.grid[mushroom_unit.pos.i][
-                            mushroom_unit.pos.j
-                        ] = Cell(type=CellType.NORMAL)
+                        self.grid[mushroom_unit.pos.i][mushroom_unit.pos.j] = Cell(
+                            type=CellType.NORMAL
+                        )
                         del self.food[cell.food_id]
+                        self.output_buffer.append(f"Food {cell.food_id} was finished")
 
     def spawn(self, mushroom_unit: MushroomUnit):
         """
@@ -206,6 +220,9 @@ class State:
                 self.players[mushroom_unit.player].mushrooms[
                     mushroom_unit.id
                 ] = mushroom_unit
+                self.output_buffer.append(
+                    f"Mushroom {mushroom_unit.id} placed in {mushroom_unit.pos}"
+                )
 
         if not valid_position:
             raise RuntimeError("Could not find a cell to start mushroom units")
@@ -240,9 +257,7 @@ class State:
         Returns:
             Tuple[int, int]: A tuple representing the row and column indices for the spawn position.
         """
-        return random.randrange(0, MAP_SIZE - 1), random.randrange(
-            0, MAP_SIZE - 1
-        )
+        return random.randrange(0, MAP_SIZE - 1), random.randrange(0, MAP_SIZE - 1)
 
     @staticmethod
     def is_valid_position(pos: Pos) -> bool:
