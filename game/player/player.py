@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 from typing import final
 from uuid import UUID
 
-from game.state import State
-from game.utils import Action, MushroomUnit
+from game.info import Info
+from game.utils import Action, MushroomUnit, BranchCommand, Pos
 
 
 class Player(Action, ABC):
@@ -19,13 +19,13 @@ class Player(Action, ABC):
 
     def __init__(self) -> None:
         super().__init__()
-        self.state = None
+        self.info = None
         self.name = self.__class__.__name__
         self.mushrooms: dict[UUID, MushroomUnit] = {}
         self.score: int = 0
 
-    def set_state(self, state: State):
-        self.state = state
+    def set_info(self, info: Info):
+        self.info = info
 
     @abstractmethod
     def play(self) -> None:
@@ -64,20 +64,20 @@ class Player(Action, ABC):
         Returns:
             bool: True if the player is winning, False otherwise.
         """
-        for name, score in self.state.total_score.items():
-            if name != self.name and self.state.total_score[self.name] <= score:
+        for player in self.info.players:
+            if player != self.name and self.info.get_score(player.name) <= self.score:
                 return False
         return True
 
-    @final
     def split(self, mushroom_unit: MushroomUnit) -> bool:
-        if self.score > 5 and len(self.mushrooms) < 50:
+        if (
+            self.score > 5
+            and len(self.mushrooms) < 50
+            and self.commands_tried < self.MAX_COMMANDS
+        ):
+            self.execute(BranchCommand(mushroom_unit.id))
             self.score -= 5
-            new = MushroomUnit(id=uuid.uuid4(), player=self.name, pos=mushroom_unit.pos)
-            self.state.spawn(new)
-            self.state.output_buffer.append(
-                f"Mushroom {mushroom_unit.id} splits into two, new mushroom unit:{new.id}"
-            )
+            self.info.players[mushroom_unit.player]["score"] -= 5
             return True
         else:
             return False

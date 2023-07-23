@@ -1,10 +1,21 @@
 from __future__ import annotations
 
 import random
+import uuid
 from typing import Optional
 
+from game.constants import MAP_SIZE
 from game.player.player import Player
-from game.utils import Command, Dir, MushroomUnit
+from game.utils import (
+    Dir,
+    MushroomUnit,
+    MoveCommand,
+    Food,
+    Pos,
+    Cell,
+    CellType,
+    is_valid_position,
+)
 
 
 class DumbPlayer(Player):
@@ -42,8 +53,8 @@ class DumbPlayer(Player):
             # Try to move to a position within the board with a random direction.
             direction = random.choice(list(Dir))
             next_pos = pos + direction
-            if self.state.is_valid_position(next_pos):
-                self.execute(Command(mushroom.id, direction))
+            if is_valid_position(next_pos):
+                self.execute(MoveCommand(mushroom.id, direction))
 
     def play(self) -> None:
         """

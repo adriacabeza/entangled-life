@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from game.utils import Action, Command, Dir, Pos
+from game.utils import Action, Dir, Pos, MoveCommand
 
 
 def test_pos_addition():
@@ -36,7 +36,7 @@ def test_action_execute():
     action = Action()
     mushroom_id = uuid.uuid4()
     direction = Dir.SOUTH
-    command = Command(id=mushroom_id, dir=direction)
+    command = MoveCommand(id=mushroom_id, dir=direction)
 
     action.execute(command)
 
@@ -49,7 +49,7 @@ def test_action_execute_maximum_commands():
     action = Action()
     mushroom_id = uuid.uuid4()
     direction = Dir.SOUTH
-    command = Command(id=mushroom_id, dir=direction)
+    command = MoveCommand(id=mushroom_id, dir=direction)
 
     for _ in range(Action.MAX_COMMANDS):
         action.execute(command)

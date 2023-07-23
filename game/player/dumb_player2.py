@@ -4,7 +4,7 @@ import random
 from typing import Optional
 
 from game.player.player import Player
-from game.utils import Command, Dir, MushroomUnit
+from game.utils import Dir, MushroomUnit, MoveCommand, is_valid_position
 
 
 class DumbPlayer2(Player):
@@ -40,8 +40,8 @@ class DumbPlayer2(Player):
             # Try to move to a position within the board with a random direction.
             direction = random.choice(list(Dir))
             next_pos = pos + direction
-            if self.state.is_valid_position(next_pos):
-                self.execute(Command(mushroom.id, direction))
+            if is_valid_position(next_pos):
+                self.execute(MoveCommand(mushroom.id, direction))
 
     def play(self) -> None:
         """

@@ -8,6 +8,7 @@ import game.player as player
 from game.constants import NUMBER_OF_ROUNDS
 from game.player.player import Player
 from game.register import Registry
+from game.info import Info
 from game.state import State
 
 
@@ -34,15 +35,16 @@ def run():
     # Create players using the registered names
     players = [Registry.new_player(name) for name in registered_players]
 
-    # Create the game state
-    game_state = State()
-    game_state.players = {player.name: player for player in players}
+    # Create game information available for each player
+    info = Info()
     for player in players:
-        player.set_state(game_state)
+        player.set_info(info)
+
+    # Create the game state
+    state = State(info, players)
 
     # Generate initial mushroom units for the players
-    game_state.generate_mushroom_units()
-    game_state.place_food()
+    state.populate_board()
 
     # Run the fight for a fixed number of rounds
     start = time.time()
@@ -51,12 +53,11 @@ def run():
             player.reset()
             player.play()
         # Perform the actions for the next round
-        game_state.next()
+        state.next()
 
         # Print the current state after each round
-    game_state.print_results()
+    state.end_game()
     print(f"time elapsed {time.time()-start}")
-    game_state.save_game()
 
 
 if __name__ == "__main__":

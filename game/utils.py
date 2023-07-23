@@ -5,6 +5,8 @@ from enum import Enum, auto
 from typing import List, Set, Union
 from uuid import UUID
 
+from game.constants import MAP_SIZE
+
 
 class Dir(Enum):
     """
@@ -128,7 +130,7 @@ class Food:
 
 
 @dataclass
-class Command:
+class MoveCommand:
     """
     Represents a command with the ID of the mushroom unit and a direction.
     """
@@ -137,12 +139,21 @@ class Command:
     dir: Dir
 
 
+@dataclass
+class BranchCommand:
+    """
+    Represents a branchding command with the ID of the mushroom unit
+    """
+
+    id: UUID
+
+
 class Action:
     """
     Stores the commands requested by a player in a round.
     """
 
-    MAX_COMMANDS: int = 100
+    MAX_COMMANDS: int = 500
 
     def __init__(self):
         """
@@ -151,14 +162,14 @@ class Action:
         """
         self.commands_tried: int = 0
         self.mushrooms_with_commands: Set[UUID] = set()
-        self.commands_to_perform: List[Command] = []
+        self.commands_to_perform: List[Union[BranchCommand, MoveCommand]] = []
 
-    def execute(self, command: Command):
+    def execute(self, command: Union[BranchCommand, MoveCommand]):
         """
         Execute a command and add it to the list of commands to perform in this round.
 
         Args:
-            command (Command): The command to be executed.
+            command (Union[BranchCommand, MoveCommand]): The command to be executed.
 
         Raises:
             RuntimeError: If the maximum number of commands is exceeded.
@@ -168,3 +179,7 @@ class Action:
         self.commands_tried += 1
         self.commands_to_perform.append(command)
         self.mushrooms_with_commands.add(command.id)
+
+
+def is_valid_position(pos: Pos) -> bool:
+    return 0 <= pos.i < MAP_SIZE and 0 <= pos.j < MAP_SIZE
