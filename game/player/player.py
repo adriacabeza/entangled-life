@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import uuid
 from abc import ABC, abstractmethod
 from uuid import UUID
+from typing import final
 
 from game.state import State
 from game.utils import MushroomUnit, Action
 
 
-class Player(Action, State, ABC):
+class Player(Action, ABC):
     """
     Abstract base class for defining player behavior in the game.
 
@@ -17,9 +19,13 @@ class Player(Action, State, ABC):
 
     def __init__(self) -> None:
         super().__init__()
+        self.state = None
         self.name = self.__class__.__name__
         self.mushrooms: dict[UUID, MushroomUnit] = {}
         self.score: int = 0
+
+    def set_state(self, state: State):
+        self.state = state
 
     @abstractmethod
     def play(self) -> None:
@@ -58,7 +64,20 @@ class Player(Action, State, ABC):
         Returns:
             bool: True if the player is winning, False otherwise.
         """
-        for name, score in self.total_score.items():
-            if name != self.name and self.total_score[self.name] <= score:
+        for name, score in self.state.total_score.items():
+            if name != self.name and self.state.total_score[self.name] <= score:
                 return False
         return True
+
+    @final
+    def split(self, mushroom_unit: MushroomUnit) -> bool:
+        if self.score > 5 and len(self.mushrooms) < 50:
+            self.score -= 5
+            new = MushroomUnit(id=uuid.uuid4(), player=self.name, pos=mushroom_unit.pos)
+            self.state.spawn(new)
+            self.state.output_buffer.append(
+                f"Mushroom {mushroom_unit.id} splits into two, new mushroom unit:{new.id}"
+            )
+            return True
+        else:
+            return False

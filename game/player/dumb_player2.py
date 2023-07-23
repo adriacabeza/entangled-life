@@ -7,25 +7,23 @@ from game.player.player import Player
 from game.utils import Dir, MushroomUnit, Command
 
 
-class DumbPlayer(Player):
+class DumbPlayer2(Player):
     """
-    A simple implementation of the Player class for test purposes.
-
-    This DumbPlayer moves mushrooms randomly within the board.
+    Another Dumb Player to make it fight against DumbPlayer 1 for test purposes
     """
 
     def __init__(self) -> None:
         super().__init__()
 
     @staticmethod
-    def factory() -> DumbPlayer:
+    def factory() -> DumbPlayer2:
         """
         Factory: returns a new instance of this class.
 
         Returns:
             DumbPlayer: A new instance of the DumbPlayer player class.
         """
-        return DumbPlayer()
+        return DumbPlayer2()
 
     def move(self, mushroom: Optional[MushroomUnit]) -> None:
 
@@ -51,5 +49,8 @@ class DumbPlayer(Player):
 
         Move each mushroom owned by this player.
         """
-        for _, mushroom in self.mushrooms.items():
+        mushrooms = list(self.mushrooms.values())
+        for mushroom in mushrooms:
             self.move(mushroom)
+            if self.score > 5:
+                self.split(mushroom)

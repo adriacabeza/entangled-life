@@ -7,7 +7,7 @@ class PlayerTemplate(Player):
     """
     A template class for creating new player implementations.
 
-    Subclasses of this template should override the play method to define the player's behavior during the game.
+    You should override the play method to define the player's behavior during the game.
     """
 
     @staticmethod
