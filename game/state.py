@@ -1,6 +1,6 @@
 from __future__ import annotations
-import csv
 
+import csv
 import random
 import uuid
 from typing import Optional, Tuple
@@ -15,7 +15,7 @@ from game.constants import (
     MIN_FOOD,
     MIN_QUANTITY_OF_FOOD,
 )
-from game.utils import Cell, CellType, Food, MushroomUnit, Pos, Command
+from game.utils import Cell, CellType, Command, Food, MushroomUnit, Pos
 
 
 class State:

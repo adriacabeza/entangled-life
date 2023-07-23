@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import uuid
 from abc import ABC, abstractmethod
-from uuid import UUID
 from typing import final
+from uuid import UUID
 
 from game.state import State
-from game.utils import MushroomUnit, Action
+from game.utils import Action, MushroomUnit
 
 
 class Player(Action, ABC):
