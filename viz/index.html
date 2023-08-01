@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Canvas Grid Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #222222;
+            position: relative;
+            /* Add this line to set relative positioning for the body */
+        }
+
+        canvas {
+            display: block;
+            background-color: #333333;
+            margin: 0 auto;
+            position: absolute;
+            /* Change this line to set absolute positioning for the canvases */
+            top: 0;
+            /* Position the canvases at the top left corner */
+            left: 0;
+        }
+
+        #textCanvas {
+            z-index: 1;
+            /* Set a higher z-index to place the textCanvas above the gridCanvas */
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #222222;
+            position: absolute;
+            /* Add this line to set absolute positioning for the textCanvas */
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gridCanvas"></canvas>
+    <canvas id="textCanvas"></canvas>
+
+    <script>
+        const gridCanvas = document.getElementById("gridCanvas");
+        const textCanvas = document.getElementById("textCanvas");
+        const gridCtx = gridCanvas.getContext("2d");
+        const textCtx = textCanvas.getContext("2d");
+
+        let cellSize, gridSizeX, gridSizeY, canvasWidth, canvasHeight;
+        const brighColors = ["#FF5733", "#FFBD33", "#33FF57", "#3362FF", "#B733FF", "#FF33C8"];
+        let availableColors = [...brighColors];
+
+        function computeGridSize() {
+            const smallestDimension = Math.min(window.innerWidth, window.innerHeight);
+            cellSize = Math.floor(smallestDimension / 50); // Adjust the divisor (50) to change the number of cells
+            gridSizeX = Math.floor(window.innerWidth / cellSize);
+            gridSizeY = Math.floor(window.innerHeight / cellSize);
+            canvasWidth = cellSize * gridSizeX;
+            canvasHeight = cellSize * gridSizeY;
+            gridCanvas.width = textCanvas.width = canvasWidth;
+            gridCanvas.height = textCanvas.height = canvasHeight;
+        }
+
+        function drawGrid() {
+            gridCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            gridCtx.strokeStyle = "#000000";
+            for (let x = 0; x < canvasWidth; x += cellSize) {
+                for (let y = 0; y < canvasHeight; y += cellSize) {
+                    gridCtx.strokeRect(x, y, cellSize, cellSize);
+                }
+            }
+        }
+
+        function drawCharacter(x, y, color) {
+            gridCtx.fillStyle = color;
+            gridCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+
+        function drawPath(path) {
+            gridCtx.strokeStyle = path.color;
+            gridCtx.beginPath();
+            for (let i = 0; i < path.moves.length; i++) {
+                const move = path.moves[i];
+                gridCtx.lineTo((move.x + 0.5) * cellSize, (move.y + 0.5) * cellSize);
+            }
+            gridCtx.stroke();
+        }
+
+        function getRandomColor() {
+            if (availableColors.length === 0) {
+                availableColors = [...brighColors];
+            }
+            const randomIndex = Math.floor(Math.random() * availableColors.length);
+            const color = availableColors[randomIndex];
+            availableColors.splice(randomIndex, 1); // Remove the used color from available colors
+            return color;
+        }
+
+        function getRandomPosition(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        function getCharacters(rounds) {
+            const characters = {};
+            for (let roundKey of Object.keys(rounds)) {
+                const roundData = rounds[roundKey];
+                const playerActions = roundData.playerActions;
+                for (let playerKey of Object.keys(playerActions)) {
+                    const playerData = playerActions[playerKey];
+                    if (!characters.hasOwnProperty(playerKey)) {
+                        characters[playerKey] = {};
+                    }
+                    const playerCharacters = characters[playerKey];
+                    for (let characterKey of Object.keys(playerData)) {
+                        if (!playerCharacters.hasOwnProperty(characterKey)) {
+                            playerCharacters[characterKey] = {
+                                color: getRandomColor(),
+                                x: getRandomPosition(gridSizeX),
+                                y: getRandomPosition(gridSizeY),
+                            };
+                        }
+                    }
+                }
+            }
+            return characters;
+        }
+
+        function getPlayerScores(roundInfo) {
+            const playerScores = {};
+            for (let playerKey of Object.keys(roundInfo)) {
+                playerScores[playerKey] = roundInfo[playerKey].score;
+            }
+            return playerScores;
+        }
+
+        function drawPlayerScores(roundKey, playerScores, characters) {
+            textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+            textCtx.fillStyle = "#FFFFFF";
+            textCtx.font = "bold 20px Courier";
+            let textX = 10;
+            let textY = 30;
+            textCtx.fillText("Round " + roundKey + ": ", textX, textY);
+            textX += textCtx.measureText("Round " + roundKey + ": ").width;
+            const separator = " | ";
+            const separatorWidth = textCtx.measureText(separator).width;
+            textCtx.font = "20px Courier";
+            for (let playerKey of Object.keys(playerScores)) {
+                const playerColor = Object.values(characters[playerKey])[0].color;
+                const playerScoreText = playerKey + ": " + playerScores[playerKey];
+                textCtx.fillStyle = playerColor;
+                textCtx.fillText(playerScoreText, textX, textY);
+                textX += textCtx.measureText(playerScoreText).width;
+                textCtx.fillStyle = "#FFFFFF";
+                textCtx.fillText(separator, textX, textY);
+                textX += separatorWidth;
+            }
+        }
+
+        async function loadRounds() {
+            const response = await fetch("./rounds.json");
+            const rounds = await response.json();
+            computeGridSize();
+            const characters = getCharacters(rounds);
+            animateRounds(rounds, characters);
+        }
+
+        async function animateRounds(rounds, characters) {
+            drawGrid();
+            for (let roundKey of Object.keys(rounds)) {
+                const roundData = rounds[roundKey];
+                const roundInfo = roundData.roundInfo;
+                const playerScores = getPlayerScores(roundInfo);
+                const playerActions = roundData.playerActions;
+                await new Promise((resolve) => setTimeout(resolve, 10)); // Delay between rounds (0.01 second)
+
+                for (let playerKey of Object.keys(playerActions)) {
+                    const playerData = playerActions[playerKey];
+                    for (let characterKey of Object.keys(playerData)) {
+                        const characterActions = playerData[characterKey];
+                        let character = characters[playerKey][characterKey];
+                        for (let action of characterActions) {
+                            switch (action.type) {
+                                case "move":
+                                    switch (action.direction) {
+                                        case "left":
+                                            if (character.x > 0) {
+                                                character.x--;
+                                            }
+                                            break;
+                                        case "right":
+                                            if (character.x < gridSizeX - 1) {
+                                                character.x++;
+                                            }
+                                            break;
+                                        case "up":
+                                            if (character.y > 0) {
+                                                character.y--;
+                                            }
+                                            break;
+                                        case "down":
+                                            if (character.y < gridSizeY - 1) {
+                                                character.y++;
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                case "split":
+                                    const newCharacterKey = action.newCharacter;
+                                    characters[playerKey][newCharacterKey] = {
+                                        color: character.color,
+                                        x: character.x,
+                                        y: character.y,
+                                    };
+                                    break;
+                                default:
+                                    break;
+                            }
+                            drawCharacter(character.x, character.y, character.color);
+                            await new Promise((resolve) => setTimeout(resolve, 10)); // Delay between moves (0.01 seconds)
+                        }
+                    }
+                }
+                drawPlayerScores(roundKey, playerScores, characters);
+            }
+        }
+
+        loadRounds();
+    </script>
+</body>
+
+</html>

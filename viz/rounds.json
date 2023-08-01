@@ -1,0 +1,60 @@
+{
+  "1": {
+    "roundInfo": {
+      "player1": {
+        "score": 0
+      },
+      "player2": {
+        "score": 0
+      }
+    },
+    "playerActions": {
+      "player1": {
+        "character1": [
+          { "type": "move", "direction": "right" },
+          { "type": "move", "direction": "up" },
+          { "type": "split", "newCharacter": "character4", "owner": "player1" },
+          { "type": "move", "direction": "right" }
+        ]
+      },
+      "player2": {
+        "character1": [
+          { "type": "move", "direction": "down" },
+          { "type": "move", "direction": "left" },
+          { "type": "move", "direction": "down" }
+        ]
+      }
+    }
+  },
+  "2": {
+    "roundInfo": {
+      "player1": {
+        "score": 50
+      },
+      "player2": {
+        "score": 30
+      }
+    },
+    "playerActions": {
+      "player1": {
+        "character1": [
+          { "type": "move", "direction": "up" },
+          { "type": "move", "direction": "left" },
+          { "type": "move", "direction": "down" }
+        ],
+        "character4": [
+          { "type": "move", "direction": "up" },
+          { "type": "move", "direction": "left" },
+          { "type": "move", "direction": "down" }
+        ]
+      },
+      "player2": {
+        "character1": [
+          { "type": "move", "direction": "right" },
+          { "type": "move", "direction": "down" },
+          { "type": "move", "direction": "right" }
+        ]
+      }
+    }
+  }
+}
